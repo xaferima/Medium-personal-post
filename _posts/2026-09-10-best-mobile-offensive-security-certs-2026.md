@@ -52,10 +52,15 @@ Prices were verified as of September 2026 from official sources. Discount codes 
 ### 1. eMAPT — The Most Known (But Showing Its Age)
 
 **Provider:** INE/eLearnSecurity
+
 **Link:** [ine.com/security/certifications/emapt-certification](https://ine.com/security/certifications/emapt-certification)
+
 **Price:** $450 exam voucher, or $599 with 3-month Premium subscription
+
 **Exam:** 12 hours, 45 questions + 2 Android APK labs
+
 **Platforms:** Android + iOS
+
 **Retake:** 1 free retake included (within 14 days of failure)
 
 The eMAPT was for years the only mobile-specific certification with any real market recognition. INE updated the exam format in July 2025 (v1.1) — the old version required building a malicious Android app in 7 days, which was more of a development exercise than a pentest.
@@ -73,11 +78,17 @@ The new format is better: 45 questions across three sections (theory, static ana
 ### 2. CMPen-Android — The Budget Powerhouse
 
 **Provider:** The SecOps Group (PentestingExams.com)
+
 **Link:** [pentestingexams.com/certifications/professional/certified-mobile-pentester-cmpen-android](https://pentestingexams.com/certifications/professional/certified-mobile-pentester-cmpen-android)
+
 **Price:** £25 with code AndroidV2-90 (90% off for V2 launch) — normally £250
+
 **Exam:** 4 hours, practical CTF-style, 14 flags
+
 **Platform:** Android
+
 **Pass:** 60% | **Merit:** 75%
+
 **Retake:** 1 free retake included
 
 CMPen-Android V2 launched September 9, 2026. The 90% discount code makes it essentially free — likely a promotional strategy to build market share against eMAPT and GMOB.
@@ -93,11 +104,17 @@ CMPen-Android V2 launched September 9, 2026. The 90% discount code makes it esse
 ### 3. CMPen-iOS — The Rare iOS Cert
 
 **Provider:** The SecOps Group (PentestingExams.com)
+
 **Link:** [pentestingexams.com/certifications/professional/certified-mobile-pentester-cmpen-ios](https://pentestingexams.com/certifications/professional/certified-mobile-pentester-cmpen-ios)
+
 **Price:** £63 with code 75-OFF — normally £250
+
 **Exam:** 4 hours, practical CTF-style, flags
+
 **Platform:** iOS
+
 **Pass:** 60% | **Merit:** 75%
+
 **Retake:** 1 free retake included
 
 iOS pentesting certs are rare. Most providers focus on Android because emulators are cheaper and jailbroken devices are harder to obtain. CMPen-iOS fills that gap.
@@ -113,11 +130,17 @@ iOS pentesting certs are rare. Most providers focus on Android because emulators
 ### 4. CAPT — The Android Deep-Dive
 
 **Provider:** Mobile Hacking Lab
+
 **Link:** [mobilehackinglab.com/courses/capt-certification](https://www.mobilehackinglab.com/courses/capt-certification)
+
 **Price:** €249 (bundle with CIPT — two certs for one price)
+
 **Exam:** 72 hours exploitation + 24 hours report
+
 **Platform:** Android
+
 **Retake:** Unlimited retakes included
+
 **Training:** Free prep course included
 
 CAPT is the certification that practicing mobile pentesters recommend to each other. It's less known than eMAPT but better regarded by practitioners.
@@ -133,11 +156,17 @@ CAPT is the certification that practicing mobile pentesters recommend to each ot
 ### 5. CIPT — The iOS Deep-Dive
 
 **Provider:** Mobile Hacking Lab
+
 **Link:** [mobilehackinglab.com/courses/cipt-certification](https://www.mobilehackinglab.com/courses/cipt-certification)
+
 **Price:** Included in CAPT bundle (€249 total for both)
+
 **Exam:** 72 hours exploitation + 24 hours report
+
 **Platform:** iOS
+
 **Retake:** Unlimited retakes included
+
 **Training:** Free prep course included
 
 CIPT is the iOS counterpart to CAPT. Same format, same quality, same reporting requirement.
@@ -153,11 +182,17 @@ CIPT is the iOS counterpart to CAPT. Same format, same quality, same reporting r
 ### 6. PMPA — The Accessible Entry Point
 
 **Provider:** TCM Security
+
 **Link:** [certifications.tcm-sec.com/pmpa](https://certifications.tcm-sec.com/pmpa/)
+
 **Price:** $249
+
 **Exam:** 2 days exploitation + 2 days report
+
 **Platform:** Android (training covers both)
+
 **Retake:** 1 free retake included
+
 **Training:** 9+ hours on-demand course included (12 months access)
 
 PMPA (formerly PJMT) is TCM Security's mobile certification. It's designed as an associate-level entry point.
@@ -173,13 +208,21 @@ PMPA (formerly PJMT) is TCM Security's mobile certification. It's designed as an
 ### 7. GMOB — The Enterprise Badge
 
 **Provider:** GIAC/SANS Institute
+
 **Link:** [giac.org/certifications/mobile-device-security-analyst-gmob](https://www.giac.org/certifications/mobile-device-security-analyst-gmob)
+
 **Training:** [SEC575: iOS and Android Application Security Analysis and Penetration Testing](https://www.sans.org/cyber-security-courses/ios-android-application-security-analysis-penetration-testing)
+
 **Price:** $999+ (exam only) / $8,780 (with SEC575 course)
+
 **Exam:** 75 MCQ, 2 hours, open-book, proctored
+
 **Passing score:** 71%
+
 **Platforms:** Android + iOS
+
 **Renewal:** Every 4 years via CPE credits
+
 **Retake:** Paid only — $399–$499 per retake. After 3 failed attempts, 1-year wait required.
 
 GMOB is the SANS/GIAC mobile cert. It carries the SANS name, which opens doors in enterprise, government, and financial sectors.
@@ -195,10 +238,15 @@ GMOB is the SANS/GIAC mobile cert. It carries the SANS name, which opens doors i
 ### 8. CAED — The Exploit Developer's Cert
 
 **Provider:** Mobile Hacking Lab
+
 **Link:** [mobilehackinglab.com/courses/android-fuzzing-exploitation](https://www.mobilehackinglab.com/courses/android-fuzzing-exploitation)
+
 **Price:** Part of bundle (pricing varies)
+
 **Exam:** Practical (exploit development in native code)
+
 **Platform:** Android (native C/C++)
+
 **Retake:** Unlimited retakes included
 
 CAED is the highest technical bar on this list. It's not a pentesting cert — it's an exploit development cert focused on Android native code.
@@ -214,12 +262,19 @@ CAED is the highest technical bar on this list. It's not a pentesting cert — i
 ### 9. OMSE — The Researcher's Pinnacle
 
 **Provider:** 8kSec Academy
+
 **Link:** [8ksec.io/omse](https://www.8ksec.io/omse/)
+
 **Training:** [Offensive Mobile Reversing and Exploitation](https://academy.8ksec.io/course/offensive-mobile-reversing-and-exploitation)
+
 **Price:** Contact for pricing (training + exam bundled)
+
 **Exam:** 48 hours, practical, comprehensive report
+
 **Platforms:** Android + iOS (userland + kernel)
+
 **Lab environment:** Corellium
+
 **Retake:** 1 included, extra attempts $149 each
 
 OMSE is the most technically demanding mobile security certification available in 2026. It spans both userland and kernel components across both major platforms.
