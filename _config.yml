@@ -1,0 +1,28 @@
+title: "Xavier Riofrio — Security Blog"
+description: "Offensive security, mobile pentesting, and ethical hacking"
+author: "Xavier Fernando Riofrio Machado"
+url: "https://xaferima.github.io"
+baseurl: "/Medium-personal-post"
+
+theme: minima
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+header_pages:
+  - index.md
+  - about.md
+
+markdown: kramdown
+highlighter: rouge
+
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
