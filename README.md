@@ -4,7 +4,7 @@ Personal offensive security blog covering mobile pentesting, certifications, and
 
 ## Live Site
 
-[https://xaferima.github.io/Medium-personal-post/](https://xaferima.github.io/Medium-personal-post/)
+[https://xaferima.com/Medium-personal-post/](https://xaferima.com/Medium-personal-post/)
 
 ## About
 
