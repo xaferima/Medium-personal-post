@@ -4,8 +4,37 @@ title: About
 permalink: /about/
 ---
 
-Offensive security professional focused on mobile application security, API pentesting, and ethical hacking.
+## Xavier Fernando Riofrio Machado
 
-Certifications: eMAPT, CAPT, CIPT, GMOB, and more.
+Offensive Security Expert with experience across web, mobile, API, cloud, and infrastructure security. Focused on applied research, KYC/biometric testing, reverse engineering, control design, and translating findings into practical remediation.
 
-Currently focused on mobile offensive security research and vulnerability disclosure.
+### Experience
+
+- **Deuna:** Offensive security leadership, mobile/API/web/cloud testing, KYC research
+- **CERN:** Web pentesting, CI/CD security, vulnerability analysis
+- **Unicomer:** Ethical hacking leadership and security operations
+- **Independent consulting:** Assessments, training, and advisory
+
+### Research Interests
+
+- Mobile application security and reverse engineering
+- Biometric security and face liveness detection
+- API pentesting methodologies
+- Deepfake detection and fraud research
+
+### Talks
+
+- DEF CON 34
+- BSides Colombia
+- PWN OR DIE
+
+### Education
+
+- MSc Cyber Security (Distinction) — University of Birmingham
+- BSc Computer Science and Engineering — Universidad de Cuenca
+
+### Certifications
+
+- CEH
+- Pentester
+- CAPIPEN
