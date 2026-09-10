@@ -13,6 +13,7 @@ plugins:
 header_pages:
   - index.md
   - about.md
+  - medium.md
 
 markdown: kramdown
 highlighter: rouge
