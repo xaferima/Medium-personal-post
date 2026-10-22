@@ -2,7 +2,7 @@
 layout: post
 title: "Pentesting AI Agent Skills: A 65-Test Offensive Checklist (OWASP AST10)"
 date: 2026-10-22
-description: "The offensive mirror of OWASP's Agentic Skills Top 10: 65 lab-executable attack tests for AI agent skills — methodology, top findings, and three deep dives (SessionStart hook RCE, read-only SQL MCP bypass, scanner LLM-judge injection)."
+description: "The offensive mirror of OWASP's Agentic Skills Top 10: 65 lab-executable attack tests for AI agent skills — methodology, top findings, and three deep dives (SessionStart hook RCE, OX Security's MCP Mother of All AI Supply Chains, scanner LLM-judge injection)."
 categories: [security, ai-agents, owasp]
 image: /Medium-personal-post/assets/images/cover-agentic-skills-offensive-checklist.jpg
 ---
@@ -39,6 +39,7 @@ While I was building the checklist, the incident column kept filling itself:
 | Oasis Security — "ClawJacked" (CVE-2026-28363) | Attacker-controlled **device pairing and command execution** against OpenClaw users via browser-to-localhost abuse. Patched Feb 2026. |
 | [Air Security — "The Story of Skills"](https://www.air.security/blog-posts/the-story-of-skills) | A skill whose payload lived on an attacker-controlled **look-alike documentation domain** reached **26,000+ agents**. Every scanner that checked it — Cisco's, Nvidia's, all of skills.sh — cleared it as safe. |
 | [Snyk — ToxicSkills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/) | Quantified malicious and leaky skills across registries, and shipped [`toxicskills-goof`](https://github.com/snyk-labs/toxicskills-goof) — known-malicious lab samples for testing your own defenses. |
+| [OX Security — "The Mother of All AI Supply Chains"](https://www.ox.security/blog/the-mother-of-all-ai-supply-chains-critical-systemic-vulnerability-at-the-core-of-the-mcp/) | An architectural flaw in Anthropic's official MCP SDKs turns **configuration into command execution** — 150M+ downloads exposed, **30+ responsible disclosures, 10+ CVEs**, and commands executed on **six live production platforms**. |
 
 One of these incidents is a supply-chain CVE. One is a takeover at 26,000-agent scale. One is an entire research program proving scanners miss natural-language payloads. The attack surface is not a hypothesis.
 
@@ -94,11 +95,13 @@ Claude Code hooks are shell commands defined in repo-level settings that fire on
 
 The offensive version: craft the repo in a Docker lab, open the agent in it, and watch the canary appear. Evidence: the hook's execution log plus the canary file on the host — code execution that never passed through a single human approval.
 
-### 2. Read-Only SQL MCP Bypass (`AS11T08`)
+### 2. The Mother of All AI Supply Chains: MCP, By Design (`AS11T05` / `AS11T08`)
 
-Plenty of MCP SQL servers advertise **read-only** access. The boundary lives in the API layer — not in the SQL engine. Engine primitives like `ATTACH DATABASE` or `COPY ... TO PROGRAM` turn a "read-only" server into **arbitrary file write and host RCE**.
+In April 2026, [OX Security published](https://www.ox.security/blog/the-mother-of-all-ai-supply-chains-critical-systemic-vulnerability-at-the-core-of-the-mcp/) the systemic version of this story. The root cause is an architectural decision baked into Anthropic's official MCP SDKs across every supported language: the STDIO interface turns MCP **configuration** directly into **command execution** — no input sanitization, no warning to the developer. If the command happens to start a server you get a handle; if it doesn't, it still ran.
 
-[m10x's corpus testing](https://m10x.de/posts/2026/07/pwning-ai-agents-part-3/4-read-only-bypass-and-more-vulns-in-sql-mcp-servers/) found **14 SQL MCP servers with read-only bypasses**. The checklist test reproduces it: attach the supposedly read-only server, write a file outside the database (`cat /tmp/m10x` returns attacker-written content), and catch the reverse shell on your listener. The lesson generalizes: *if the enforcement point is an API wrapper around a powerful engine, the engine is the real attack surface.*
+The blast radius: **150M+ downloads, 7,000+ publicly reachable servers, up to 200,000 vulnerable instances**. OX executed commands on **six live production platforms** — Letta AI through an intercepted "test connection" request, IBM's LangFlow with no authentication at all (915+ exposed instances on Shodan), Flowise by sidestepping its hardening with `npx -c`, and Windsurf **zero-click** via prompt injection that writes a malicious STDIO entry into `mcp.json` (CVE-2026-30615). They poisoned 9 of 11 MCP registries with a malicious trial balloon, collected 10+ CVEs, and filed 30+ responsible disclosures. Anthropic's response: the behavior is by design.
+
+The checklist carries two lab-reproducible versions of the class. `AS11T05` reproduces the root cause itself — a repo-shipped MCP config spawns a STDIO reverse shell while the IDE still shows its safe-mode banner. `AS11T08` reproduces the server-side variant on SQL MCP servers that advertise read-only: slip state-changing SQL past the denylist (`ATTACH DATABASE`, `COPY ... TO PROGRAM`) and [14 servers in the m10x corpus](https://m10x.de/posts/2026/07/pwning-ai-agents-part-3/4-read-only-bypass-and-more-vulns-in-sql-mcp-servers/) let you write files and catch a shell. The lesson generalizes: *if the enforcement point is an API wrapper around a powerful engine, the engine is the real attack surface.*
 
 ### 3. Prompt-Injecting the Scanner's LLM Judge (`AS08T04`)
 
