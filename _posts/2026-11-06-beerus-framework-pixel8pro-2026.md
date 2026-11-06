@@ -72,17 +72,17 @@ The following table summarizes every feature I verified on device, mapped to the
 
 | Feature | What it does | Testing phase | Evidence |
 |---|---|---|---|
-| Frida Server Setup | Starts/stops the embedded `hiddenBin` Frida Core on `127.0.0.1:27042` | Runtime instrumentation | `frida-ps -U` from host returns device processes |
+| Frida Server Setup | Starts/stops the embedded `hiddenBin` Frida Core on `127.0.0.1:27042` | Runtime instrumentation | `screenshots/07-frida-setup.png` (v17.26.1, Status: Running) |
 | Frida Auto-Inject | Launches a target app via `launchIntent`, waits 5 s, attaches Frida Core with a selected JS script | Runtime instrumentation / root-detection bypass | Live demo below — script executed inside MASTG app |
-| Frida Versions / Scripts | Manage multiple Frida Core builds and a library of JS scripts from the phone | Tooling management | `screenshots/01-home-beerus.png`, `screenshots/02-drawer.png` |
-| Sandbox Exfiltration | Root-level copy of `/data/data/<pkg>` to a visible output folder | Data storage assessment (MASVS-STORAGE) | Exfiltrates app-private files after root |
-| Memory Dump | Full process memory dump of a selected app | Sensitive data detection (MASVS-STORAGE / CRYPTO) | Artifact written to device storage |
-| Manifest | Decodes and displays any installed APK's `AndroidManifest.xml` | Attack-surface mapping (MASVS-PLATFORM) | Decoded components, permissions, exported flags |
-| ADB over Network | Sets `service.adb.tcp.port=5555` and restarts adbd at boot via the module | Remote control without USB | Verified `adb connect <ip>:5555` after toggle |
-| Proxy Profiles | Save and apply HTTP proxy profiles (host:port) with one tap | Traffic interception (MASVS-NETWORK) | Profile persisted in module `status` file |
+| Frida Versions / Scripts | Manage multiple Frida Core builds and a library of JS scripts from the phone | Tooling management | `screenshots/08-frida-scripts.png`, `screenshots/02-drawer.png` |
+| Sandbox Exfiltration | Root-level copy of `/data/data/<pkg>` to a visible output folder | Data storage assessment (MASVS-STORAGE) | `screenshots/09-sandbox-exf.png` (MASTG app listed as target) |
+| Memory Dump | Full process memory dump of a selected app | Sensitive data detection (MASVS-STORAGE / CRYPTO) | `screenshots/10-memory-dump.png` |
+| Manifest | Decodes and displays any installed APK's `AndroidManifest.xml` | Attack-surface mapping (MASVS-PLATFORM) | `screenshots/11-manifest.png` |
+| ADB over Network | Sets `service.adb.tcp.port=5555` and restarts adbd at boot via the module | Remote control without USB | `screenshots/12-adb-network.png` |
+| Proxy Profiles | Save and apply HTTP proxy profiles (host:port) with one tap | Traffic interception (MASVS-NETWORK) | `screenshots/13-proxy-profiles.png` |
 | Root Manager | Install/remove/enable KernelSU modules directly inside Beerus | Environment setup | `beerusRootModule` v0.1 by Hakai listed and active |
-| Properties | Read and write system properties (`resetprop`) | Environment fingerprinting / bypass | Property set + `getprop` confirmation |
-| Boot Options | Toggle Frida-on-startup, ADB-over-network, and System Trusted Certs at boot | Persistence (assessment environment) | Flags written to module `status`, applied at boot |
+| Properties | Read and write system properties (`resetprop`) | Environment fingerprinting / bypass | `screenshots/14-properties.png` |
+| Boot Options | Toggle Frida-on-startup, ADB-over-network, and System Trusted Certs at boot | Persistence (assessment environment) | `screenshots/15-boot-options.png` (flags written to `status`, applied at reboot) |
 | System Trusted Certs | Mount-bind promotes user CAs into `/system/etc/security/cacerts` and the Conscrypt APEX store | SSL pinning interception prep | Module `post-fs-data.sh` performs the bind-mount |
 | Update | In-app update channel for the framework itself | Maintenance | Version surfaced in app settings |
 
