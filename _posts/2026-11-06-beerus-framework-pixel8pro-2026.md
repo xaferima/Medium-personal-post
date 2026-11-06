@@ -112,6 +112,8 @@ The installation path I used:
 
 4. **Start Frida Core** from the Frida Setup screen — `hiddenBin` appears in `ps`, listening on `27042`, and `frida-ps -U` works from the host immediately.
 
+![Frida Core running on device — frida-ps -U from the host](/Medium-personal-post/assets/images/beerus-frida-running.png)
+
 No Magisk app, no `magisk` binary, no patched boot image. The ReSukiSU manager (`com.resukisu.resukisu`) was never opened during this process.
 
 ---
@@ -134,6 +136,9 @@ Supporting evidence captured on device:
 - `screenshots/06-frida-running.png` — `frida-ps -U` from the host against the on-device `hiddenBin` server
 - `screenshots/05-root-manager-unlocked.png` — Root Manager with the Beerus module installed and active
 - `screenshots/04-home-after-grant.png` — Beerus home after the ReSukiSU allowlist grant
+
+![Root Manager with the Beerus module installed and active](/Medium-personal-post/assets/images/beerus-root-manager.png)
+
 - Shell verification: `hiddenBin` PID on `127.0.0.1:27042`, `service.adb.tcp.port` toggled, module `status` flags round-tripped
 
 ---
