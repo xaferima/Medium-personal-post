@@ -1,13 +1,13 @@
 ---
 layout: post
-title: "Beerus Framework: Running a Full Mobile Pentest Stack Without Magisk"
+title: "Beerus Framework: Frida, Sandbox Dumps, ADB and Proxies — The Whole Stack for Android Hacking From Your Phone"
 date: 2026-11-06
-description: "How I installed and validated Beerus Framework on a rooted Pixel 8 Pro with ReSukiSU — Frida Auto-Inject, sandbox exfil, memory dumps, ADB over network and boot persistence, without a single Magisk install."
+description: "How I installed and validated Beerus Framework on a rooted Pixel 8 Pro with ReSukiSU — Frida, sandbox dumps, ADB and proxies, the whole stack from your phone, no Magisk required."
 categories: [security, mobile, frida]
 image: /Medium-personal-post/assets/images/cover-beerus-framework-pixel8pro-2026.jpg
 ---
 
-# Beerus Framework: Running a Full Mobile Pentest Stack Without Magisk
+# Beerus Framework: Frida, Sandbox Dumps, ADB and Proxies — The Whole Stack for Android Hacking From Your Phone
 
 **How I installed and validated Beerus Framework on a rooted Pixel 8 Pro with ReSukiSU — and why it matters for authorized mobile assessments**
 
@@ -20,22 +20,21 @@ Offensive Security Researcher
 1. [Introduction](#introduction)
 2. [Disclaimer](#disclaimer)
 3. [What is Beerus Framework?](#what-is-beerus-framework)
-3. [The Feature Set — What You Actually Get](#the-feature-set--what-you-actually-get)
-4. [Installing Without Magisk: Beerus on ReSukiSU](#installing-without-magisk-beerus-on-resukisu)
-5. [Hands-On: Frida Auto-Inject Against an OWASP MASTG Playground App](#hands-on-frida-auto-inject-against-an-owasp-mastg-playground-app)
-6. [Honest Assessment — Pros and Cons](#honest-assessment--pros-and-cons)
-7. [Verdict](#verdict)
-8. [References](#references)
+4. [The Feature Set — What You Actually Get](#the-feature-set--what-you-actually-get)
+5. [Installing Without Magisk: Beerus on ReSukiSU](#installing-without-magisk-beerus-on-resukisu)
+6. [Hands-On: Frida Auto-Inject Against an OWASP MASTG Playground App](#hands-on-frida-auto-inject-against-an-owasp-mastg-playground-app)
+7. [Honest Assessment — Pros and Cons](#honest-assessment--pros-and-cons)
+8. [Verdict](#verdict)
+9. [Evidence](#evidence)
+10. [References](#references)
 
 ---
 
 ## Introduction
 
-Most Android security toolkits assume Magisk. You flash a Magisk zip, manage modules in the Magisk app, and reboot into a system where `su` is available through MagiskSU. That assumption breaks the moment your device runs a KernelSU-family solution — which is exactly what happened to my 2026 assessment device.
+Beerus Framework replaces five or six mobile pentest tools with one app — and it doesn't care whether your root comes from **Magisk**, **KernelSU**, or a KernelSU fork like **ReSukiSU**. I deployed it on a Pixel 8 Pro running Android 17 with ReSukiSU v4.2.0-rc1, without ever opening the ReSukiSU manager, and ran an entire assessment loop from the phone: Frida Core as a renamed root process, sandbox pulls, memory dumps, decoded manifests, ADB over the network, and proxy profiles that survive reboots.
 
-Beerus Framework is an Android application by the Hakai team (the same group behind hakaisecurity.io) that replaces an entire mobile pentest stack with a single app: Frida server management, script injection, sandbox data exfiltration, memory dumps, decoded manifests, ADB over the network, proxy profiles, system property manipulation, and boot-time persistence. No Magisk app required — just a KernelSU-compatible root provider and the Beerus module.
-
-This post documents my real deployment on a **Google Pixel 8 Pro running Android 17 with ReSukiSU v4.2.0-rc1**, without ever opening or modifying the ReSukiSU manager app. Every screenshot and command in this article came from my own device during an authorized assessment workflow.
+This post covers what the framework actually does, how I installed it through the ReSukiSU kernel allowlist, the hands-on proof against an OWASP MASTG lab app, and an honest list of where it still falls short.
 
 ---
 
@@ -56,11 +55,11 @@ This post documents my real deployment on a **Google Pixel 8 Pro running Android
 
 Beerus Framework is an open-source Android application (`io.hakaisecurity.beerusframework`) distributed on GitHub at [hakaioffsec/beerus-android](https://github.com/hakaioffsec/beerus-android), with its release notes and research background published at [yokai.hakaisecurity.io](https://yokai.hakaisecurity.io/beerus-framework-a-new-mobile-framework-arises/).
 
-The core idea is simple: mobile pentesters juggle five or six separate tools (frida-server, objection, drozer, mitmproxy, apktool, custom shell scripts). Beerus consolidates the highest-value subset into one Compose app, with a companion Magisk/KernelSU module (`beerusRootModule`) that wires the boot-time plumbing — starting the hidden Frida binary, promoting user certificates to the system trust store, opening ADB on TCP, and persisting proxy settings.
+The core idea is simple: mobile pentesters juggle five or six separate tools (frida-server, objection, drozer, mitmproxy, apktool, custom shell scripts). Beerus consolidates the highest-value subset into one Compose app, with a companion root module (`beerusRootModule`) that wires the boot-time plumbing — starting the hidden Frida binary, promoting user certificates to the system trust store, opening ADB on TCP, and persisting proxy settings.
 
 Key design decisions that distinguish it:
 
-- **No Magisk dependency.** The module works on any KernelSU-compatible root solution (KernelSU, ReSukiSU, KernelSU Next). The app talks to the module through a small SQLite bridge (`dbAgent`) rather than calling `su` on every action.
+- **Runs on Magisk, KernelSU, and KernelSU forks.** The companion module is a standard Magisk-format zip that KernelSU and its forks also install — I run it on ReSukiSU, and it works the same on plain Magisk or KernelSU Next. The app talks to the module through a small SQLite bridge (`dbAgent`) rather than calling `su` on every action.
 - **Frida Core embedded.** A 61 MB ELF (`fridaCore`) ships inside the module. It starts as a root process named `hiddenBin` and listens on `127.0.0.1:27042` — no PC-side `frida-server` upload needed.
 - **Everything from the phone.** Script selection, injection, memory dumps, sandbox pulls, and property changes all happen on-device. You never need a laptop tethered over USB.
 
@@ -70,21 +69,23 @@ Key design decisions that distinguish it:
 
 The following table summarizes every feature I verified on device, mapped to the mobile testing phase it supports:
 
-| Feature | What it does | Testing phase | Evidence |
-|---|---|---|---|
-| Frida Server Setup | Starts/stops the embedded `hiddenBin` Frida Core on `127.0.0.1:27042` | Runtime instrumentation | `screenshots/07-frida-setup.png` (v17.26.1, Status: Running) |
-| Frida Auto-Inject | Launches a target app via `launchIntent`, waits 5 s, attaches Frida Core with a selected JS script | Runtime instrumentation / root-detection bypass | Live demo below — script executed inside MASTG app |
-| Frida Versions / Scripts | Manage multiple Frida Core builds and a library of JS scripts from the phone | Tooling management | `screenshots/08-frida-scripts.png`, `screenshots/02-drawer.png` |
-| Sandbox Exfiltration | Root-level copy of `/data/data/<pkg>` to a visible output folder | Data storage assessment (MASVS-STORAGE) | `screenshots/09-sandbox-exf.png` (MASTG app listed as target) |
-| Memory Dump | Full process memory dump of a selected app | Sensitive data detection (MASVS-STORAGE / CRYPTO) | `screenshots/10-memory-dump.png` |
-| Manifest | Decodes and displays any installed APK's `AndroidManifest.xml` | Attack-surface mapping (MASVS-PLATFORM) | `screenshots/11-manifest.png` |
-| ADB over Network | Sets `service.adb.tcp.port=5555` and restarts adbd at boot via the module | Remote control without USB | `screenshots/12-adb-network.png` |
-| Proxy Profiles | Save and apply HTTP proxy profiles (host:port) with one tap | Traffic interception (MASVS-NETWORK) | `screenshots/13-proxy-profiles.png` |
-| Root Manager | Install/remove/enable KernelSU modules directly inside Beerus | Environment setup | `beerusRootModule` v0.1 by Hakai listed and active |
-| Properties | Read and write system properties (`resetprop`) | Environment fingerprinting / bypass | `screenshots/14-properties.png` |
-| Boot Options | Toggle Frida-on-startup, ADB-over-network, and System Trusted Certs at boot | Persistence (assessment environment) | `screenshots/15-boot-options.png` (flags written to `status`, applied at reboot) |
-| System Trusted Certs | Mount-bind promotes user CAs into `/system/etc/security/cacerts` and the Conscrypt APEX store | SSL pinning interception prep | Module `post-fs-data.sh` performs the bind-mount |
-| Update | In-app update channel for the framework itself | Maintenance | Version surfaced in app settings |
+| Feature | What it does | Testing phase |
+|---|---|---|
+| Frida Server Setup | Starts/stops the embedded `hiddenBin` Frida Core on `127.0.0.1:27042` | Runtime instrumentation |
+| Frida Auto-Inject | Launches a target app via `launchIntent`, waits 5 s, attaches Frida Core with a selected JS script | Runtime instrumentation / root-detection bypass |
+| Frida Versions / Scripts | Manage multiple Frida Core builds and a library of JS scripts from the phone | Tooling management |
+| Sandbox Exfiltration | Root-level copy of `/data/data/<pkg>` to a visible output folder | Data storage assessment (MASVS-STORAGE) |
+| Memory Dump | Full process memory dump of a selected app | Sensitive data detection (MASVS-STORAGE / CRYPTO) |
+| Manifest | Decodes and displays any installed APK's `AndroidManifest.xml` | Attack-surface mapping (MASVS-PLATFORM) |
+| ADB over Network | Sets `service.adb.tcp.port=5555` and restarts adbd at boot via the module | Remote control without USB |
+| Proxy Profiles | Save and apply HTTP proxy profiles (host:port) with one tap | Traffic interception (MASVS-NETWORK) |
+| Root Manager | Install/remove/enable root modules directly inside Beerus | Environment setup |
+| Properties | Read and write system properties (`resetprop`) | Environment fingerprinting / bypass |
+| Boot Options | Toggle Frida-on-startup, ADB-over-network, and System Trusted Certs at boot | Persistence (assessment environment) |
+| System Trusted Certs | Mount-bind promotes user CAs into `/system/etc/security/cacerts` and the Conscrypt APEX store | SSL pinning interception prep |
+| Update | In-app update channel for the framework itself | Maintenance |
+
+Screenshot evidence for every row is in the [Evidence](#evidence) section at the end of this post.
 
 Two details worth highlighting for practitioners:
 
@@ -96,7 +97,7 @@ Two details worth highlighting for practitioners:
 
 ## Installing Without Magisk: Beerus on ReSukiSU
 
-**Credit where it is due:** the root layer on this device is **ReSukiSU**, a KernelSU fork maintained by the **ReSukiSU team** (part of the broader LRFP stack — LSPosed, ReSukiSU, FuseFixer, Play Integrity Fix — originally assembled by the LRFP-Team). ReSukiSU v4.2.0-rc1 runs as a loadable kernel module (LKM) on Android 17 and provides KernelSU-compatible userspace (`ksud`) with a persistent app-allowlist mechanism. Without that allowlist system, Beerus could not have been granted `su` without ever opening the ReSukiSU manager app. My thanks to the ReSukiSU team for maintaining the fork that makes this workflow possible — their allowlist, documented in my earlier note cambio-allowlist-resukisu, is the only touchpoint needed.
+**Credit where it is due:** the root layer on this device is **ReSukiSU**, a KernelSU fork maintained by the **ReSukiSU team**. ReSukiSU v4.2.0-rc1 runs as a loadable kernel module (LKM) on Android 17 and provides KernelSU-compatible userspace (`ksud`) with a persistent app-allowlist mechanism. Without that allowlist system, Beerus could not have been granted `su` without ever opening the ReSukiSU manager app — my thanks to the ReSukiSU team for making this workflow possible. The allowlist change itself is documented in my earlier note on the ReSukiSU allowlist.
 
 The installation path I used:
 
@@ -111,8 +112,6 @@ The installation path I used:
 3. **Install the Beerus app** (`Beerus-Framework-V1.1.0.apk`, SHA-256 `569cdef7197731ddbc35d76ea1d4ef8eb345a7b131c4b09f496bdb26d9ec53a8`).
 
 4. **Start Frida Core** from the Frida Setup screen — `hiddenBin` appears in `ps`, listening on `27042`, and `frida-ps -U` works from the host immediately.
-
-![Frida Core running on device — frida-ps -U from the host](/Medium-personal-post/assets/images/beerus-frida-running.png)
 
 No Magisk app, no `magisk` binary, no patched boot image. The ReSukiSU manager (`com.resukisu.resukisu`) was never opened during this process.
 
@@ -131,15 +130,7 @@ The workflow, entirely from the phone:
 
 This is the feature that makes Beerus worth installing: **script injection with zero USB tethering and zero PC-side frida-server management.** On a bus, in a client office, or during a mobile-only engagement, the entire instrumented workflow fits in your pocket.
 
-Supporting evidence captured on device:
-
-- `screenshots/06-frida-running.png` — `frida-ps -U` from the host against the on-device `hiddenBin` server
-- `screenshots/05-root-manager-unlocked.png` — Root Manager with the Beerus module installed and active
-- `screenshots/04-home-after-grant.png` — Beerus home after the ReSukiSU allowlist grant
-
-![Root Manager with the Beerus module installed and active](/Medium-personal-post/assets/images/beerus-root-manager.png)
-
-- Shell verification: `hiddenBin` PID on `127.0.0.1:27042`, `service.adb.tcp.port` toggled, module `status` flags round-tripped
+> [!tip] **Shell verification** — `hiddenBin` PID on `127.0.0.1:27042`, `service.adb.tcp.port` toggled, module `status` flags round-tripped.
 
 ---
 
@@ -147,12 +138,12 @@ Supporting evidence captured on device:
 
 ### Pros
 
-- **Magisk-free.** Works on KernelSU/ReSukiSU/KSU-Next; the app never touches the Magisk manager.
+- **Runs on Magisk and KernelSU alike.** One module, three root ecosystems (Magisk, KernelSU, ReSukiSU/forks); the app never touches the Magisk manager when you don't want it to.
 - **Single-file Frida.** 61 MB embedded Core, started as a renamed root process (`hiddenBin`), no upload step.
 - **Boot persistence is optional and clean.** All boot-time behavior lives in one module `status` file; disabling a flag and rebooting fully reverts it. Cert promotion is mount-bind only.
 - **Everything on-device.** Script import, injection, memory dumps, sandbox pulls, manifest decoding — no laptop required.
 - **Small, auditable module.** `post-fs-data.sh` + `service.sh` are ~1.9 KB each; you can read the entire privilege surface in five minutes.
-- **In-app module manager.** Install, remove, and toggle KernelSU modules without leaving the framework.
+- **In-app module manager.** Install, remove, and toggle root modules without leaving the framework.
 
 ### Cons
 
@@ -160,18 +151,56 @@ Supporting evidence captured on device:
 - **Root required, full stop.** No non-root fallback — by design, but it excludes unrooted test devices and stock lab phones.
 - **No Linux/macOS/Windows client.** The framework lives on the phone; PC-side workflows (objection, Ghidra bridges, custom scripting) are out of scope.
 - **Frida Core is a 61 MB blob.** You trust the build; pin and verify the SHA-256 yourself before deploying.
-- **Stealth is not its goal.** `hiddenBin` is a rename, not an anti-detection layer. Against hardened RASP (Play Integrity, Magisk-detect libraries), combine it with the rest of the LRFP stack — Beerus is a *toolkit*, not an evasion product.
+- **Stealth is not its goal.** `hiddenBin` is a rename, not an anti-detection layer. Against hardened RASP (Play Integrity, Magisk-detect libraries), combine it with the rest of your bypass stack — Beerus is a *toolkit*, not an evasion product.
 - **Early-stage project.** v0.1 module / V1.1.0 app; expect rough edges in edge cases (e.g., multi-user profiles, work profiles).
 
 ---
 
 ## Verdict
 
-Beerus Framework solves a real friction point: **running a modern mobile assessment stack on a KernelSU-family device without installing Magisk.** On my Pixel 8 Pro with ReSukiSU, the full loop — allowlist grant, module install, Frida Core start, script auto-inject into an OWASP MASTG lab app — completed from the phone alone, with every boot-time feature cleanly revertible.
+Beerus Framework solves a real friction point: **running a modern mobile assessment stack from the phone alone, whatever your root provider is.** On my Pixel 8 Pro with ReSukiSU, the full loop — allowlist grant, module install, Frida Core start, script auto-inject into an OWASP MASTG lab app — completed from the device, with every boot-time feature cleanly revertible.
 
-If your assessment device runs ReSukiSU or any KernelSU fork and you want Frida, cert promotion, ADB-over-network, proxy persistence, and sandbox/memory tooling in one place, Beerus is currently the most coherent option I have tested. Pair it with the ReSukiSU allowlist workflow documented in cambio-allowlist-resukisu and you have a complete no-Magisk mobile pentest environment.
+If your assessment device runs Magisk, KernelSU, or a KernelSU fork like ReSukiSU, and you want Frida, cert promotion, ADB-over-network, proxy persistence, and sandbox/memory tooling in one place, Beerus is currently the most coherent option I have tested.
 
-**Recommended for:** authorized mobile pentesters and bug bounty hunters on rooted Android devices who want a pocket-sized, Magisk-free assessment stack.
+**Recommended for:** authorized mobile pentesters and bug bounty hunters on rooted Android devices who want a pocket-sized assessment stack.
+
+---
+
+## Evidence
+
+Screenshots captured on device during this deployment:
+
+1. **Drawer navigation** — the full feature menu, from Frida Setup to Boot Options:
+
+![](/Medium-personal-post/assets/images/beerus-02-drawer.jpg)
+
+2. **Frida Setup** — embedded Frida Core v17.26.1, Status: Running:
+
+![](/Medium-personal-post/assets/images/beerus-07-frida-setup.jpg)
+
+3. **Frida Scripts** — script library and Add Script, all on-device:
+
+![](/Medium-personal-post/assets/images/beerus-08-frida-scripts.jpg)
+
+4. **Sandbox Exf/** — `/data/data` target list, including the MASTG lab app ("Attack me if u can"):
+
+![](/Medium-personal-post/assets/images/beerus-09-sandbox-exf.jpg)
+
+5. **ADB O/ Network** — network ADB toggle:
+
+![](/Medium-personal-post/assets/images/beerus-12-adb-network.jpg)
+
+6. **Boot Options** — Trusted System Certificates, ADB Over Network, and Frida boot flags:
+
+![](/Medium-personal-post/assets/images/beerus-15-boot-options.jpg)
+
+7. **Root Manager** — the Beerus module v0.1 by Hakai installed and active:
+
+![](/Medium-personal-post/assets/images/beerus-05-root-manager-unlocked.jpg)
+
+8. **Frida running** — `frida-ps -U` from the host against the on-device `hiddenBin` server:
+
+![](/Medium-personal-post/assets/images/beerus-06-frida-running.jpg)
 
 ---
 
@@ -181,7 +210,6 @@ If your assessment device runs ReSukiSU or any KernelSU fork and you want Frida,
 - **Hakai research article:** [yokai.hakaisecurity.io — Beerus Framework: A New Mobile Framework Arises](https://yokai.hakaisecurity.io/beerus-framework-a-new-mobile-framework-arises/)
 - **OWASP MASTG Hacking Playground:** [github.com/OWASP/MASTG-Hacking-Playground](https://github.com/OWASP/MASTG-Hacking-Playground)
 - **ReSukiSU (KernelSU fork):** maintained by the ReSukiSU team; allowlist workflow documented in cambio-allowlist-resukisu
-- **LRFP stack (LSPosed + ReSukiSU + FuseFixer + Play Integrity Fix):** see my earlier post *Building an Invisible Penetration Testing Device: LRFP Stack on Pixel 8 Pro (Android 17)*
 - **OWASP MASVS / MASTG:** [owasp.org/www-project-mobile-application-security/](https://owasp.org/www-project-mobile-application-security/)
 
 *Prices: n/a. Disclaimer: Beerus Framework is free and open source; this article is not sponsored by the Hakai team or the ReSukiSU team. All testing was performed on owned devices and authorized lab applications.*
