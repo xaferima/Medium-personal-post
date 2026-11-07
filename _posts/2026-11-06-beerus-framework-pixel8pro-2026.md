@@ -11,6 +11,8 @@ image: /Medium-personal-post/assets/images/cover-beerus-framework-pixel8pro-2026
 
 **How I installed and validated Beerus Framework on a rooted Pixel 8 Pro with ReSukiSU — and why it matters for authorized mobile assessments**
 
+![](/Medium-personal-post/assets/images/cover-beerus-framework-pixel8pro-2026.jpg)
+
 Offensive Security Researcher
 
 ---
@@ -20,13 +22,15 @@ Offensive Security Researcher
 1. [Introduction](#introduction)
 2. [Disclaimer](#disclaimer)
 3. [What is Beerus Framework?](#what-is-beerus-framework)
-4. [The Feature Set — What You Actually Get](#the-feature-set--what-you-actually-get)
-5. [Installing Without Magisk: Beerus on ReSukiSU](#installing-without-magisk-beerus-on-resukisu)
-6. [Hands-On: Frida Auto-Inject Against an OWASP MASTG Playground App](#hands-on-frida-auto-inject-against-an-owasp-mastg-playground-app)
-7. [Honest Assessment — Pros and Cons](#honest-assessment--pros-and-cons)
-8. [Verdict](#verdict)
-9. [Evidence](#evidence)
-10. [References](#references)
+4. [Requirements & Quick Start](#requirements--quick-start)
+5. [The Feature Set — What You Actually Get](#the-feature-set--what-you-actually-get)
+6. [Installing Without Magisk: Beerus on ReSukiSU](#installing-without-magisk-beerus-on-resukisu)
+7. [Hands-On: Frida Auto-Inject Against an OWASP MASTG Playground App](#hands-on-frida-auto-inject-against-an-owasp-mastg-playground-app)
+8. [Beerus vs. the Manual Stack](#beerus-vs-the-manual-stack)
+9. [Honest Assessment — Pros and Cons](#honest-assessment--pros-and-cons)
+10. [Verdict](#verdict)
+11. [Evidence](#evidence)
+12. [References](#references)
 
 ---
 
@@ -62,6 +66,31 @@ Key design decisions that distinguish it:
 - **Runs on Magisk, KernelSU, and KernelSU forks.** The companion module is a standard Magisk-format zip that KernelSU and its forks also install — I run it on ReSukiSU, and it works the same on plain Magisk or KernelSU Next. The app talks to the module through a small SQLite bridge (`dbAgent`) rather than calling `su` on every action.
 - **Frida Core embedded.** A 61 MB ELF (`fridaCore`) ships inside the module. It starts as a root process named `hiddenBin` and listens on `127.0.0.1:27042` — no PC-side `frida-server` upload needed.
 - **Everything from the phone.** Script selection, injection, memory dumps, sandbox pulls, and property changes all happen on-device. You never need a laptop tethered over USB.
+
+---
+
+## Requirements & Quick Start
+
+**Requirements:**
+
+- Rooted Android device — Magisk, KernelSU, or a KernelSU fork (ReSukiSU, KernelSU Next)
+- Beerus app `Beerus-Framework-V1.1.0.apk` — SHA-256 `569cdef7197731ddbc35d76ea1d4ef8eb345a7b131c4b09f496bdb26d9ec53a8`
+- `beerusRootModule.zip` (4.1 KB) from the [GitHub releases](https://github.com/hakaioffsec/beerus-android/releases)
+
+**Quick Start — from zero to instrumented in about five minutes:**
+
+1. Install the APK (sideload or `adb install`).
+2. Open Beerus → **Root Manager** → **Install Module** → pick `beerusRootModule.zip`.
+3. Grant `su` to `io.hakaisecurity.beerusframework` — on ReSukiSU that is a kernel-allowlist entry (see the install section below); on Magisk/KernelSU, approve the prompt.
+4. **Frida Setup** → Start — the embedded Core listens on `127.0.0.1:27042`.
+
+Verify from the host over USB:
+
+```bash
+adb shell su -c 'ps -A | grep hiddenBin'                              # Frida process alive
+adb shell su -c 'cat /data/adb/modules/beerusRootModule/status'       # feature flags
+frida-ps -U                                                           # device processes visible
+```
 
 ---
 
@@ -134,6 +163,24 @@ This is the feature that makes Beerus worth installing: **script injection with 
 
 ---
 
+## Beerus vs. the Manual Stack
+
+For years the default workflow was a bag of PC-side tools pointed at a USB cable. Here is what changes:
+
+| Task | Manual stack | Beerus |
+|---|---|---|
+| Run Frida | Push `frida-server`, `chmod`, launch as root, connect over USB | Embedded Core, started from the UI, on-device |
+| Trust user certs | Copy into `/system` + reboot (often needs remount) | Bind-mount at `post-fs-data`; disk stays clean |
+| ADB over network | `setprop` + stop/start `adbd` by hand | One Boot Options toggle, persisted in `status` |
+| Sandbox pull / memory dump | `run-as`/root `cp`, or frida-dump scripts | Two taps from the phone |
+| Manifest decoding | apktool/jadx on a laptop | Manifest view on-device |
+| Proxy config | Per-tool manual settings, lost on reboot | Proxy Profiles persisted across reboots |
+| Setup per device | ~20–40 minutes | ~5 minutes |
+
+What you give up: full scripting flexibility and PC-side automation. Beerus covers the 80% you repeat on every engagement — for the rest you still want a laptop, a terminal, and your own scripts.
+
+---
+
 ## Honest Assessment — Pros and Cons
 
 ### Pros
@@ -170,35 +217,35 @@ If your assessment device runs Magisk, KernelSU, or a KernelSU fork like ReSukiS
 
 Screenshots captured on device during this deployment:
 
-1. **Drawer navigation** — the full feature menu, from Frida Setup to Boot Options:
+**1. Drawer navigation** — the full feature menu, from Frida Setup to Boot Options:
 
 ![](/Medium-personal-post/assets/images/beerus-02-drawer.jpg)
 
-2. **Frida Setup** — embedded Frida Core v17.26.1, Status: Running:
+**2. Frida Setup** — embedded Frida Core v17.26.1, Status: Running:
 
 ![](/Medium-personal-post/assets/images/beerus-07-frida-setup.jpg)
 
-3. **Frida Scripts** — script library and Add Script, all on-device:
+**3. Frida Scripts** — script library and Add Script, all on-device:
 
 ![](/Medium-personal-post/assets/images/beerus-08-frida-scripts.jpg)
 
-4. **Sandbox Exf/** — `/data/data` target list, including the MASTG lab app ("Attack me if u can"):
+**4. Sandbox Exf/** — `/data/data` target list, including the MASTG lab app ("Attack me if u can"):
 
 ![](/Medium-personal-post/assets/images/beerus-09-sandbox-exf.jpg)
 
-5. **ADB O/ Network** — network ADB toggle:
+**5. ADB O/ Network** — network ADB toggle:
 
 ![](/Medium-personal-post/assets/images/beerus-12-adb-network.jpg)
 
-6. **Boot Options** — Trusted System Certificates, ADB Over Network, and Frida boot flags:
+**6. Boot Options** — Trusted System Certificates, ADB Over Network, and Frida boot flags:
 
 ![](/Medium-personal-post/assets/images/beerus-15-boot-options.jpg)
 
-7. **Root Manager** — the Beerus module v0.1 by Hakai installed and active:
+**7. Root Manager** — the Beerus module v0.1 by Hakai installed and active:
 
 ![](/Medium-personal-post/assets/images/beerus-05-root-manager-unlocked.jpg)
 
-8. **Frida running** — `frida-ps -U` from the host against the on-device `hiddenBin` server:
+**8. Frida running** — `frida-ps -U` from the host against the on-device `hiddenBin` server:
 
 ![](/Medium-personal-post/assets/images/beerus-06-frida-running.jpg)
 
