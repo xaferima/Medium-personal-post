@@ -4,7 +4,7 @@ title: Medium
 permalink: /medium/
 ---
 
-## Writing on Medium
+## Post
 
 ### 2026
 
