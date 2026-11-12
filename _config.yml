@@ -4,6 +4,8 @@ author: "Xavier Fernando Riofrio Machado"
 url: "https://xaferima.github.io"
 baseurl: "/Medium-personal-post"
 
+theme: minima
+
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
